@@ -1,19 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import SongList from "./SongList";
+import AudioPlayer from "./AudioPlayer";
+import "./App.css";
 
 function App() {
-  const [message, setMessage] = useState("");
-
-  useEffect(() => {
-    fetch("/api/test")
-      .then((response) => response.json())
-      .then((data) => setMessage(data.message));
-  }, []);
+  const [selectedSong, setSelectedSong] = useState(null);
 
   return (
     <div className="App">
-      <header className="App-header">
-        <p>Message from Flask: {message}</p>
+      <header>
+        <h1>Song Recommender</h1>
       </header>
+      <SongList onSelectSong={setSelectedSong} />
+      <AudioPlayer song={selectedSong} />
     </div>
   );
 }

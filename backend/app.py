@@ -1,9 +1,11 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 import eyed3
 import os
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///mydatabase.db'
 db = SQLAlchemy(app)
 
@@ -29,8 +31,17 @@ def test():
 def list_songs():
     songs = Song.query.all()  # Retrieves all songs from the database
     return jsonify([
-        {'title': song.title, 'artist': song.artist, 'file_path': song.file_path} for song in songs
+        {'id': song.id, 'title': song.title, 'artist': song.artist, 'file_path': song.file_path} for song in songs
     ])
+
+@app.route('/audio/<int:song_id>')
+def serve_audio(song_id):
+    song = Song.query.get(song_id)
+    if song:
+        return send_from_directory(os.path.dirname(song.file_path), os.path.basename(song.file_path))
+    else:
+        return "Song not found", 404
+
 
 
 def populate_database(root_directory):
@@ -57,7 +68,7 @@ def populate_database(root_directory):
     db.session.commit()  # Final commit if there are any remaining songs
 
 if __name__ == '__main__':
-    with app.app_context():  # Set up an application context
+    #with app.app_context():  # Set up an application context
         # Uncomment the following line when you want to populate the database
-        populate_database('./data')
+        #populate_database('./data')
     app.run(debug=True, port=5000)
