@@ -1,7 +1,33 @@
 import React, { useEffect, useState } from "react";
+import StarRating from "./StarRating";
 
 function SongList({ onSelectSong }) {
   const [songs, setSongs] = useState([]);
+  const [ratings, setRatings] = useState({});
+
+  const handleRating = (songId, rating) => {
+    fetch("/rate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ song_id: songId, rating: rating }),
+    })
+      .then((response) => {
+        if (response.ok) {
+          return response.json();
+        }
+        throw new Error("Network response was not ok.");
+      })
+      .then((data) => {
+        console.log(data.message); // Or handle this message in your UI
+      })
+      .catch((error) => {
+        console.error("Error posting rating:", error);
+      });
+  };
+
+  // In the JSX, call handleRating when a star is clicked
 
   useEffect(() => {
     fetch("/api/songs")
@@ -16,6 +42,11 @@ function SongList({ onSelectSong }) {
       })
       .then((data) => {
         setSongs(data);
+        return fetch("/api/ratings");
+      })
+      .then((response) => response.json())
+      .then((data) => {
+        setRatings(data);
       })
       .catch((error) => {
         console.error("Error fetching songs:", error);
@@ -26,12 +57,15 @@ function SongList({ onSelectSong }) {
     <div>
       <h2>Songs</h2>
       <ul>
-        {songs.map((song, index) => (
-          <li key={index}>
-            {" "}
-            {/* Using index as a last resort if there's no unique id */}
+        {songs.map((song) => (
+          <li key={song.id}>
             {song.title} by {song.artist}
             <button onClick={() => onSelectSong(song)}>Play</button>
+            <StarRating
+              songId={song.id}
+              onChange={handleRating}
+              initialRating={ratings[song.id] || 0}
+            />
           </li>
         ))}
       </ul>

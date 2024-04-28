@@ -5,3 +5,11 @@ body {
 li {
   margin-bottom: 10px;
 }
+.star {
+  cursor: pointer;
+  color: grey;
+}
+
+.star.on {
+  color: gold;
+}
