@@ -1,11 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import StarRating from "./StarRating";
+import LogoutButton from "./LogoutButton";
 
-function SongList({ onSelectSong }) {
+function SongList() {
   const [songs, setSongs] = useState([]);
   const [ratings, setRatings] = useState({});
 
-  const handleRating = (songId, rating) => {
+  const audioRef = useRef(null);
+
+  const handleRating = (rating, songId) => {
     fetch("/rate", {
       method: "POST",
       headers: {
@@ -20,11 +23,20 @@ function SongList({ onSelectSong }) {
         throw new Error("Network response was not ok.");
       })
       .then((data) => {
-        console.log(data.message); // Or handle this message in your UI
+        setRatings((prevRatings) => ({ ...prevRatings, [songId]: rating }));
       })
       .catch((error) => {
         console.error("Error posting rating:", error);
       });
+  };
+
+  const onSelectSong = (song) => {
+    if (audioRef.current) {
+      audioRef.current.src = `/audio/${song.id}`; // Adjusted to your file path setup
+      audioRef.current
+        .play()
+        .catch((e) => console.error("Error playing audio:", e));
+    }
   };
 
   // In the JSX, call handleRating when a star is clicked
@@ -46,6 +58,7 @@ function SongList({ onSelectSong }) {
       })
       .then((response) => response.json())
       .then((data) => {
+        console.log("Ratings fetched:", data);
         setRatings(data);
       })
       .catch((error) => {
@@ -55,6 +68,7 @@ function SongList({ onSelectSong }) {
 
   return (
     <div>
+      <LogoutButton />
       <h2>Songs</h2>
       <ul>
         {songs.map((song) => (
@@ -69,6 +83,7 @@ function SongList({ onSelectSong }) {
           </li>
         ))}
       </ul>
+      <audio ref={audioRef} controls />
     </div>
   );
 }

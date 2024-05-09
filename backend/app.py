@@ -1,14 +1,23 @@
 from flask import Flask, jsonify, send_from_directory, request
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 import eyed3
 import os
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import login_user, logout_user, current_user, login_required, LoginManager, UserMixin
+import logging
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'b\xad\x07b\x9d\x06\xc1$\xc9\xd8\x85\x12\xed\xb9\xfd\xb1\xc2\x97\xdd\xd1\x02_\xb9R\xba'
 CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///mydatabase.db'
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+logging.basicConfig(level=logging.INFO)
 
 class Song(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -22,11 +31,13 @@ class Song(db.Model):
 class Rating(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     song_id = db.Column(db.Integer, db.ForeignKey('song.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # Link to the User model
     rating = db.Column(db.Integer, nullable=False)
-    # Add a user_id field if implementing user-specific ratings
-    # user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
-class User(db.Model):
+    # Adding relationship to User
+    user = db.relationship('User', backref=db.backref('ratings', lazy=True))
+
+class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True, nullable=False)
     email = db.Column(db.String(120), index=True, unique=True, nullable=False)
@@ -64,39 +75,83 @@ def serve_audio(song_id):
         return "Song not found", 404
 
 @app.route('/rate', methods=['POST'])
+@login_required
 def rate_song():
     data = request.get_json()
-    song_id = data.get('song_id')
     rating = data.get('rating')
-
-    if not song_id or not isinstance(song_id, int):
-        return jsonify({'message': 'Invalid or missing song_id'}), 400
+    song_id = data.get('song_id')
     
-    if not rating or not isinstance(rating, int) or not (1 <= rating <= 5):
-        return jsonify({'message': 'Invalid rating'}), 400
+    logging.info(f"Received rating: {rating} for song ID: {song_id} from user ID: {current_user.id}")
 
-    song = Song.query.get(song_id)
-    if not song:
-        return jsonify({'message': 'Song not found'}), 404
+    # Ensure the current user is logged in
+    if not current_user.is_authenticated:
+        return jsonify({'message': 'User not authenticated'}), 401
 
-    # Check if a rating already exists for this song
-    existing_rating = Rating.query.filter_by(song_id=song_id).first()
+    # Check for existing rating by the user for the same song
+    existing_rating = Rating.query.filter_by(song_id=song_id, user_id=current_user.id).first()
     if existing_rating:
-        existing_rating.rating = rating  # Update the existing rating
-        db.session.commit()
-        return jsonify({'message': 'Rating updated successfully'}), 200
+        existing_rating.rating = rating
     else:
-        # Create a new rating if not exists
-        new_rating = Rating(song_id=song_id, rating=rating)
+        new_rating = Rating(song_id=song_id, user_id=current_user.id, rating=rating)
         db.session.add(new_rating)
-        db.session.commit()
-        return jsonify({'message': 'Rating submitted successfully'}), 200
+    
+    db.session.commit()
+    return jsonify({'message': 'Rating updated successfully'}), 200
     
 @app.route('/api/ratings')
+@login_required
 def get_ratings():
-    ratings = Rating.query.all()
-    ratings_dict = {rating.song_id: rating.rating for rating in ratings}
+    if not current_user.is_authenticated:
+        return jsonify({'message': 'User not authenticated'}), 401
+    
+    user_ratings = Rating.query.filter_by(user_id=current_user.id).all()
+    ratings_dict = {rating.song_id: rating.rating for rating in user_ratings}
     return jsonify(ratings_dict)
+
+# Flask backend - app.py
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    username = data.get('username')
+    email = data.get('email')
+    password = data.get('password')
+
+    # Check if user already exists
+    existing_user = User.query.filter_by(username=username).first()
+    if existing_user:
+        return jsonify({'success': False, 'message': 'User already exists'}), 400
+
+    # Create new user
+    new_user = User(username=username, email=email, password_hash=generate_password_hash(password))
+    db.session.add(new_user)
+    db.session.commit()
+
+    return jsonify({'success': True, 'message': 'User created successfully'}), 201
+
+
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    username = data['username']
+    password = data['password']
+    user = User.query.filter_by(username=username).first()
+    if user and check_password_hash(user.password_hash, password):
+        login_user(user)
+        return jsonify({'authenticated': True, 'user': user.username}), 200
+    else:
+        return jsonify({'authenticated': False}), 401
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+@app.route('/logout', methods=['POST'])
+@login_required
+def logout():
+    logout_user()
+    return jsonify({'message': 'Logged out successfully'}), 200
+
+
 
 
 

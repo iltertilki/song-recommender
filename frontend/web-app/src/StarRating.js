@@ -1,9 +1,9 @@
 import React, { useState, useEffect, memo } from "react";
+
 const StarRating = memo(({ songId, onChange, initialRating }) => {
   const [rating, setRating] = useState(initialRating);
 
   useEffect(() => {
-    console.log("Initial Rating updated:", initialRating);
     setRating(initialRating);
   }, [initialRating]);
 
@@ -14,14 +14,12 @@ const StarRating = memo(({ songId, onChange, initialRating }) => {
 
   return (
     <div>
-      {[1, 2, 3, 4, 5].map((star, index) => (
+      {[1, 2, 3, 4, 5].map((star) => (
         <span
-          key={index}
-          role="button"
-          aria-label={`Rate ${star} stars`}
+          key={star}
           className={`star ${star <= rating ? "on" : "off"}`}
           onClick={() => handleClick(star)}
-          style={{ cursor: "pointer" }} // Ensure it's clear this is clickable
+          style={{ cursor: "pointer", color: star <= rating ? "gold" : "grey" }} // Ensure styling is consistent and correct
         >
           &#9733;
         </span>
