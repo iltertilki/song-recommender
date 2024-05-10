@@ -5,8 +5,32 @@ import LogoutButton from "./LogoutButton";
 function SongList() {
   const [songs, setSongs] = useState([]);
   const [ratings, setRatings] = useState({});
+  const [recommendedSongs, setRecommendedSongs] = useState([]);
 
   const audioRef = useRef(null);
+
+  const fetchRecommendations = () => {
+    const songIndices = Object.keys(ratings).map((id) => parseInt(id));
+    const ratingsValues = Object.values(ratings);
+
+    fetch("/recommendations", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        song_indices: songIndices,
+        ratings: ratingsValues,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setRecommendedSongs(data.recommended_songs); // Update state with the recommended songs
+      })
+      .catch((error) =>
+        console.error("Failed to fetch recommendations:", error)
+      );
+  };
 
   const handleRating = (rating, songId) => {
     fetch("/rate", {
@@ -70,6 +94,7 @@ function SongList() {
     <div>
       <LogoutButton />
       <h2>Songs</h2>
+      <button onClick={fetchRecommendations}>Get Recommendations</button>
       <ul>
         {songs.map((song) => (
           <li key={song.id}>
@@ -84,6 +109,14 @@ function SongList() {
         ))}
       </ul>
       <audio ref={audioRef} controls />
+      <h2>Recommended Songs</h2>
+      <ul>
+        {recommendedSongs.map((song, index) => (
+          <li key={song.id || index}>
+            {song.title} by {song.artist}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

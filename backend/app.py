@@ -7,6 +7,8 @@ from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user, current_user, login_required, LoginManager, UserMixin
 import logging
+from recommendations import enhanced_recommend
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'b\xad\x07b\x9d\x06\xc1$\xc9\xd8\x85\x12\xed\xb9\xfd\xb1\xc2\x97\xdd\xd1\x02_\xb9R\xba'
@@ -150,6 +152,23 @@ def load_user(user_id):
 def logout():
     logout_user()
     return jsonify({'message': 'Logged out successfully'}), 200
+
+
+@app.route('/recommendations', methods=['POST'])
+@login_required
+def generate_recommendations():
+    data = request.get_json()
+    song_indices = data['song_indices']
+    ratings = data['ratings']
+    if not song_indices or not ratings:
+        return jsonify({'message': 'Missing data for recommendations'}), 400
+
+    try:
+        recommendations = enhanced_recommend(song_indices, ratings)
+        return jsonify({'recommended_songs': recommendations}), 200
+    except Exception as e:
+        return jsonify({'message': 'Error generating recommendations', 'error': str(e)}), 500
+
 
 
 
