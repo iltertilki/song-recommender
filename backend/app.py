@@ -158,20 +158,29 @@ def logout():
 @login_required
 def generate_recommendations():
     data = request.get_json()
-    song_indices = data['song_indices']
-    ratings = data['ratings']
-    if not song_indices or not ratings:
-        return jsonify({'message': 'Missing data for recommendations'}), 400
-
+    song_indices = data.get('song_indices')
+    ratings = data.get('ratings')
+    
+    # Fetch already rated song IDs by the current user to exclude from recommendations
+    rated_song_ids = {rating.song_id for rating in Rating.query.filter_by(user_id=current_user.id).all()}
+    print("Rated song ids are: ", rated_song_ids)
+    
     try:
-        recommendations = enhanced_recommend(song_indices, ratings)
+        recommendations = enhanced_recommend(song_indices, ratings, exclude_indices=rated_song_ids)
+        recommendations = [int(song_id) for song_id in recommendations]
+        app.logger.info(f"Recommendations generated: {recommendations}")
         return jsonify({'recommended_songs': recommendations}), 200
     except Exception as e:
         return jsonify({'message': 'Error generating recommendations', 'error': str(e)}), 500
 
 
 
-
+@app.route('/api/songs/details', methods=['POST'])
+def song_details():
+    song_ids = request.json.get('song_ids', [])
+    songs = Song.query.filter(Song.id.in_(song_ids)).all()
+    song_data = [{'id': song.id, 'title': song.title, 'artist': song.artist} for song in songs]
+    return jsonify(song_data)
 
 
 

@@ -25,11 +25,34 @@ function SongList() {
     })
       .then((response) => response.json())
       .then((data) => {
-        setRecommendedSongs(data.recommended_songs); // Update state with the recommended songs
+        console.log("Recommendation IDs received:", data.recommended_songs);
+        fetchSongDetails(data.recommended_songs);
       })
       .catch((error) =>
         console.error("Failed to fetch recommendations:", error)
       );
+  };
+
+  const fetchSongDetails = (songIds) => {
+    fetch(`/api/songs/details`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ song_ids: songIds }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Song details fetched:", data);
+        // Assuming the data array comes back in the order of IDs sent and needs to be rearranged:
+        const orderedData = songIds.map((id) =>
+          data.find((song) => song.id === id)
+        );
+        setRecommendedSongs(orderedData);
+      })
+      .catch((error) => {
+        console.error("Error fetching song details:", error);
+      });
   };
 
   const handleRating = (rating, songId) => {
@@ -63,26 +86,21 @@ function SongList() {
     }
   };
 
-  // In the JSX, call handleRating when a star is clicked
-
   useEffect(() => {
     fetch("/api/songs")
       .then((response) => {
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
-        return response.text(); // First get the text of the response
+        return response.text();
       })
-      .then((text) => {
-        return JSON.parse(text); // Then parse the text as JSON
-      })
+      .then((text) => JSON.parse(text))
       .then((data) => {
         setSongs(data);
         return fetch("/api/ratings");
       })
       .then((response) => response.json())
       .then((data) => {
-        console.log("Ratings fetched:", data);
         setRatings(data);
       })
       .catch((error) => {
@@ -93,8 +111,23 @@ function SongList() {
   return (
     <div>
       <LogoutButton />
-      <h2>Songs</h2>
+      <h2>Recommended Songs</h2>
       <button onClick={fetchRecommendations}>Get Recommendations</button>
+      <ul>
+        {recommendedSongs.map((song) => (
+          <li key={song.id}>
+            {song.title} by {song.artist}
+            <button onClick={() => onSelectSong(song)}>Play</button>
+            <StarRating
+              songId={song.id}
+              onChange={(rating) => handleRating(rating, song.id)}
+              initialRating={ratings[song.id] || 0}
+            />
+          </li>
+        ))}
+      </ul>
+      <audio ref={audioRef} controls />
+      <h2>Songs</h2>
       <ul>
         {songs.map((song) => (
           <li key={song.id}>
@@ -105,15 +138,6 @@ function SongList() {
               onChange={handleRating}
               initialRating={ratings[song.id] || 0}
             />
-          </li>
-        ))}
-      </ul>
-      <audio ref={audioRef} controls />
-      <h2>Recommended Songs</h2>
-      <ul>
-        {recommendedSongs.map((song, index) => (
-          <li key={song.id || index}>
-            {song.title} by {song.artist}
           </li>
         ))}
       </ul>
