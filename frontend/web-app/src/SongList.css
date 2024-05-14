@@ -1,0 +1,62 @@
+.song-list-container {
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f9;
+  min-height: 100vh; /* Ensures full height */
+}
+
+.header {
+  display: flex;
+  justify-content: space-between; /* Spaces items on opposite ends */
+  align-items: center; /* Centers items vertically */
+  padding: 10px 20px; /* Padding for breathing space */
+  background-color: #fff; /* Contrasting background for the header */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.logout-button {
+  padding: 8px 16px;
+  background-color: #dc3545; /* Bootstrap 'danger' color for logout to indicate action */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.logout-button:hover {
+  background-color: #c82333; /* Darker shade on hover */
+}
+
+.song-list-title,
+.recommended-songs-title {
+  color: #333;
+  font-size: 1.5rem;
+}
+
+.song-list-button,
+.play-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  margin: 5px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.song-list-button:hover,
+.play-button:hover {
+  background-color: #0056b3;
+}
+
+.song-list,
+.recommended-songs-list {
+  list-style: none;
+  padding: 0;
+}
+
+.song-item {
+  border-bottom: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 10px;
+}

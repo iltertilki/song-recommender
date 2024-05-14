@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import StarRating from "./StarRating";
 import LogoutButton from "./LogoutButton";
+import "./SongList.css";
 
 function SongList() {
   const [songs, setSongs] = useState([]);
@@ -109,15 +110,19 @@ function SongList() {
   }, []);
 
   return (
-    <div>
+    <div className="song-list-container">
       <LogoutButton />
-      <h2>Recommended Songs</h2>
-      <button onClick={fetchRecommendations}>Get Recommendations</button>
-      <ul>
+      <h2 className="recommended-songs-title">Recommended Songs</h2>
+      <button className="song-list-button" onClick={fetchRecommendations}>
+        Get Recommendations
+      </button>
+      <ul className="recommended-songs-list">
         {recommendedSongs.map((song) => (
-          <li key={song.id}>
+          <li key={song.id} className="song-item">
             {song.title} by {song.artist}
-            <button onClick={() => onSelectSong(song)}>Play</button>
+            <button className="play-button" onClick={() => onSelectSong(song)}>
+              Play
+            </button>
             <StarRating
               songId={song.id}
               onChange={(rating) => handleRating(rating, song.id)}
@@ -127,12 +132,14 @@ function SongList() {
         ))}
       </ul>
       <audio ref={audioRef} controls />
-      <h2>Songs</h2>
-      <ul>
+      <h2 className="song-list-title">Songs</h2>
+      <ul className="song-list">
         {songs.map((song) => (
-          <li key={song.id}>
+          <li key={song.id} className="song-item">
             {song.title} by {song.artist}
-            <button onClick={() => onSelectSong(song)}>Play</button>
+            <button className="play-button" onClick={() => onSelectSong(song)}>
+              Play
+            </button>
             <StarRating
               songId={song.id}
               onChange={handleRating}
