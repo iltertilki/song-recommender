@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import LoginPage from "./LoginPage";
-import "./HomePage.css"; // Assuming your CSS file is named HomePage.css
+import "./HomePage.css";
 
 function HomePage() {
   return (
