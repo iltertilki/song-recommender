@@ -22,7 +22,7 @@ def train_nearest_neighbors(df):
     """
     Trains the Nearest Neighbors model using the preprocessed features.
     """
-    X = df.drop('song', axis=1)  # Assuming 'song' column is the identifier
+    X = df.drop('song', axis=1)
     model = NearestNeighbors(n_neighbors=5, algorithm='ball_tree')
     model.fit(X)
     
@@ -30,18 +30,14 @@ def train_nearest_neighbors(df):
 
 def main():
     try:
-        # Load data
         dir_path = os.path.dirname(os.path.realpath(__file__))
         file_path = os.path.join(dir_path, 'song_features.csv')
         df = pd.read_csv(file_path)
 
-        # Preprocess features
         df = preprocess_features(df, save_scaler=True)
 
-        # Train the model
         model = train_nearest_neighbors(df)
 
-        # Save the model
         dump(model, 'nearest_neighbors_model.joblib')
         print("Model trained and saved successfully.")
     except Exception as e:

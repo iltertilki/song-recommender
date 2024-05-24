@@ -15,8 +15,8 @@ function LogoutButton() {
     })
       .then((response) => {
         if (response.ok) {
-          auth.logout(); // Update auth state to reflect logout
-          navigate("/"); // Redirect to the homepage or login page
+          auth.logout();
+          navigate("/");
         }
       })
       .catch((error) => console.error("Logout failed:", error));

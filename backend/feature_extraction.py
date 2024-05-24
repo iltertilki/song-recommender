@@ -25,7 +25,7 @@ def extract_features(file_path):
         return features
     except Exception as e:
         logging.error(f"Failed to process {file_path}: {e}")
-        return None  # Return None or a default dictionary if an error occurs
+        return None
 
 def process_directory(directory):
     features_list = []

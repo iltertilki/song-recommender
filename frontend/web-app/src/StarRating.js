@@ -19,7 +19,7 @@ const StarRating = memo(({ songId, onChange, initialRating }) => {
           key={star}
           className={`star ${star <= rating ? "on" : "off"}`}
           onClick={() => handleClick(star)}
-          style={{ cursor: "pointer", color: star <= rating ? "gold" : "grey" }} // Ensure styling is consistent and correct
+          style={{ cursor: "pointer", color: star <= rating ? "gold" : "grey" }}
         >
           &#9733;
         </span>

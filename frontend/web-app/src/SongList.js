@@ -45,7 +45,6 @@ function SongList() {
       .then((response) => response.json())
       .then((data) => {
         console.log("Song details fetched:", data);
-        // Assuming the data array comes back in the order of IDs sent and needs to be rearranged:
         const orderedData = songIds.map((id) =>
           data.find((song) => song.id === id)
         );
@@ -80,7 +79,7 @@ function SongList() {
 
   const onSelectSong = (song) => {
     if (audioRef.current) {
-      audioRef.current.src = `/audio/${song.id}`; // Adjusted to your file path setup
+      audioRef.current.src = `/audio/${song.id}`;
       audioRef.current
         .play()
         .catch((e) => console.error("Error playing audio:", e));

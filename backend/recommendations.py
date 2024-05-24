@@ -3,12 +3,10 @@ import pandas as pd
 from sklearn.neighbors import NearestNeighbors
 from joblib import load
 
-# Load preprocessed song features
 df = pd.read_csv('song_features.csv')
-X = df.drop('song', axis=1)  # Features for the recommendation model
-y = df['song']  # Song identifiers
+X = df.drop('song', axis=1)
+y = df['song']
 
-# Load the pre-trained nearest neighbors model
 model = load('nearest_neighbors_model.joblib')
 
 def enhanced_recommend(song_indices, ratings, n_recommendations=5, exclude_indices=[]):
@@ -26,9 +24,8 @@ def enhanced_recommend(song_indices, ratings, n_recommendations=5, exclude_indic
     list of int: Indices of recommended songs, ensuring none of them have been rated.
     """
     song_scores = {}
-    max_neighbors = 100  # Maximum neighbors to consider for a more extensive pool of recommendations
+    max_neighbors = 100
 
-    # Calculate recommendations based on ratings and neighbors
     for song_index, rating in zip(song_indices, ratings):
         # Start with a reasonable number of neighbors and increase if necessary
         num_neighbors = n_recommendations * 2
@@ -47,7 +44,6 @@ def enhanced_recommend(song_indices, ratings, n_recommendations=5, exclude_indic
                         song_scores[idx] = 0
                     song_scores[idx] += (5 - distances[0][i]) * rating  # Weight by rating and inverse distance
 
-    # Sort song indices by their calculated scores in descending order
     sorted_indices = sorted(song_scores, key=song_scores.get, reverse=True)
 
     # Select the top recommendations ensuring they have not been rated

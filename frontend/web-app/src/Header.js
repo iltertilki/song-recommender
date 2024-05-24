@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "./AuthContext"; // Adjust the import path according to your structure
+import { useAuth } from "./AuthContext";
 
 const Header = () => {
   const auth = useAuth();
@@ -10,8 +10,7 @@ const Header = () => {
       headers: { "Content-Type": "application/json" },
     })
       .then(() => {
-        auth.logout(); // Update your auth state/context
-        // Optionally redirect to home or login page
+        auth.logout();
       })
       .catch((error) => console.error("Logout failed:", error));
   };

@@ -2,21 +2,21 @@
   padding: 20px;
   font-family: Arial, sans-serif;
   background-color: #f4f4f9;
-  min-height: 100vh; /* Ensures full height */
+  min-height: 100vh;
 }
 
 .header {
   display: flex;
-  justify-content: space-between; /* Spaces items on opposite ends */
-  align-items: center; /* Centers items vertically */
-  padding: 10px 20px; /* Padding for breathing space */
-  background-color: #fff; /* Contrasting background for the header */
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #fff;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .logout-button {
   padding: 8px 16px;
-  background-color: #dc3545; /* Bootstrap 'danger' color for logout to indicate action */
+  background-color: #dc3545;
   color: white;
   border: none;
   border-radius: 4px;
@@ -24,7 +24,7 @@
 }
 
 .logout-button:hover {
-  background-color: #c82333; /* Darker shade on hover */
+  background-color: #c82333;
 }
 
 .song-list-title,
